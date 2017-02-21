@@ -29,75 +29,42 @@ function setInitialDisplay() {
     /* Add appian JS script to head */
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src = taskUrl.substr(0, tasksTextIndex) + "tempo.nocache.js";
+    script.src = taskUrl.substr(0, tasksTextIndex) + "ui/sail-client/embeddedBootstrap.nocache.js";
+    script.setAttribute("id", "appianEmbedded");
     script.innerHTML = null;
     document.head.appendChild(script);
 
     var newTask = generateAndInsertTaskTag(taskId);
-    waitForLoad(newTask);
+    waitForSignIn($(newTask));
 }
 
 function generateAndInsertTaskTag(taskId) {
   var newTask = document.createElement('appian-task');
   newTask.setAttribute("id", "new-task");
   newTask.setAttribute("taskId", taskId);
-  newTask.style.display = "none";
-  newTask.addEventListener("submit", handleSubmit, false);
   document.body.appendChild(newTask);
   
   return newTask;
 }
 
-function waitForLoad(newTask) {
-  var wrappedNewTask = $(newTask);
-  
-  function waitForEmbeddedContent(){
-    var links = wrappedNewTask.find('a');
-    if (wrappedNewTask.find('form').length > 0 || links.length > 0) {
-      viewTaskOrSignIn(wrappedNewTask, links);
-      newTask.removeEventListener('DOMSubtreeModified', waitForEmbeddedContent);
-    }
-  }
-  
-  newTask.addEventListener('DOMSubtreeModified', waitForEmbeddedContent);
-}
-
-function viewTaskOrSignIn(wrappedNewTask, links) {
-    if (links.length == 1) {
-        var link = links[0];
-        if (link.innerHTML == "Sign In") {
-            function waitForEmbeddedSignIn() {
-              var xmlHttp = new XMLHttpRequest();
-              xmlHttp.withCredentials = true;
-              xmlHttp.open("GET", getDomainWithSuite() + "auth?appian_environment=tempo"); // false for synchronous request
-              xmlHttp.onreadystatechange = function(){
-                if (xmlHttp.readyState == 4){
-                  if (xmlHttp.status == 403) {
-                    showSignOutLink();
-                    wrappedNewTask.off('DOMSubtreeModified', waitForEmbeddedSignIn);
-                  }
-                };
-              };
-              xmlHttp.send(null);
-            }
-            wrappedNewTask.on('DOMSubtreeModified', waitForEmbeddedSignIn);
-            link.click();
-            wrappedNewTask.show();
-        } else {
-            viewTask(wrappedNewTask);
+function waitForSignIn(wrappedNewTask) {
+  function waitForEmbeddedSignIn() {
+    $.ajax({
+      type: 'GET',
+      url: getDomainWithSuite() + "auth?appian_environment=tempo",
+      contentType: 'text/plain',
+      xhrFields: {
+        withCredentials: true
+      },
+      statusCode: {
+        403: function(){
+          $("#sign-out-link").show();
+          wrappedNewTask.off('DOMSubtreeModified', waitForEmbeddedSignIn);
         }
-    } else {
-        viewTask(wrappedNewTask);
-    }
-}
-
-function showSignOutLink() {
-  $("#sign-out-link").show();
-}
-
-function viewTask(wrappedNewTask) {
-    wrappedNewTask.show();
-    showSignOutLink();
+      }
+    });
+  }
+  wrappedNewTask.on('DOMSubtreeModified', waitForEmbeddedSignIn);
 }
 
 function signOut() {
@@ -120,9 +87,4 @@ function signOut() {
     {
         window.location.reload(true);
     }
-}
-
-/* This function is called by the submit event listener */
-function handleSubmit() {
-    alert("The task has been submitted!");
 }
