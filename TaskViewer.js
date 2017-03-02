@@ -35,7 +35,6 @@ function setInitialDisplay() {
     document.head.appendChild(script);
 
     var newTask = generateAndInsertTaskTag(taskId);
-    waitForSignIn($(newTask));
 }
 
 function generateAndInsertTaskTag(taskId) {
@@ -45,46 +44,4 @@ function generateAndInsertTaskTag(taskId) {
   document.body.appendChild(newTask);
   
   return newTask;
-}
-
-function waitForSignIn(wrappedNewTask) {
-  function waitForEmbeddedSignIn() {
-    $.ajax({
-      type: 'GET',
-      url: getDomainWithSuite() + "auth?appian_environment=tempo",
-      contentType: 'text/plain',
-      xhrFields: {
-        withCredentials: true
-      },
-      statusCode: {
-        403: function(){
-          $("#sign-out-link").show();
-          wrappedNewTask.off('DOMSubtreeModified', waitForEmbeddedSignIn);
-        }
-      }
-    });
-  }
-  wrappedNewTask.on('DOMSubtreeModified', waitForEmbeddedSignIn);
-}
-
-function signOut() {
-    var domainWithSuite = getDomainWithSuite();
-    var logoutUrl = domainWithSuite + "logout";
-    
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", logoutUrl, true); // false for synchronous request
-    xmlHttp.withCredentials = true;
-    xmlHttp.send(null);
-
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf("MSIE ");
-    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))  // If Internet Explorer, return version number
-    {
-        // Internet explorer breaks iframes if location.reload is used, so for IE use a hidden link to go back to the login screen
-        document.getElementById('logoutlink').click();
-    }
-    else  // If another browser, return 0
-    {
-        window.location.reload(true);
-    }
 }
