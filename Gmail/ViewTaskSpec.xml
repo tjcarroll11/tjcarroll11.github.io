@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Module>
+  <ModulePrefs title="View Task"
+    description="Matches task emails and embeds the task in the email body"
+    author="Tim Carroll"
+    author_email="tjcarroll11@gmail.com"
+    author_location="Washington, DC">
+
+    <Require feature="dynamic-height"/>
+    
+    <Require feature="google.contentmatch">
+      <Param name="extractors">
+        google.com:HttpLinkExtractor
+      </Param>
+    </Require>
+
+  </ModulePrefs>
+  <Content type="html" view="card">
+  <![CDATA[
+<style>
+    body {margin:0}
+    .ms-appian__signout-link {
+      display: none;
+    }
+</style>
+<script>
+  function getTaskUrl() {
+    google.contentmatch.getContentMatches()[0]["task_url"]
+  }
+
+  function getDomainWithSuite(taskUrl) {
+    taskUrl = taskUrl || getTaskUrl()
+    return taskUrl.substr(0, taskUrl.indexOf("/tempo") + 1);
+  }
+
+  function setInitialDisplay() {
+
+      /* Get task url and extract domain & task ID */
+      var taskUrl = getTaskUrl();
+
+      var tasksTextIndex = taskUrl.indexOf("tasks");
+      var urlSplitBySlash = taskUrl.split("/");
+      var taskId = urlSplitBySlash[urlSplitBySlash.length - 1];
+          
+      /* Add appian JS script to head */
+      var script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = taskUrl.substr(0, tasksTextIndex) + "ui/sail-client/embeddedBootstrap.nocache.js";
+      script.setAttribute("id", "appianEmbedded");
+      script.innerHTML = null;
+      document.head.appendChild(script);
+
+      var newTask = generateAndInsertTaskTag(taskId);
+  }
+
+  function generateAndInsertTaskTag(taskId) {
+    var newTask = document.createElement('appian-task');
+    newTask.setAttribute("id", "new-task");
+    newTask.setAttribute("taskId", taskId);
+    document.body.appendChild(newTask);
+    
+    return newTask;
+  }
+</script>
+<div id="container">
+    <div align="right">
+      <a class="ms-appian__signout-link" id="logoutlink" href="TaskViewer.html">.</a>
+      <a class="ms-appian__signout-link" id="sign-out-link" onclick="signOut();" href="#">Sign Out&nbsp;&nbsp;</a>
+    </div>
+</div>
+  ]]>
+  </Content>
+</Module>
