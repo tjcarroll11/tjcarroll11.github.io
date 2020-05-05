@@ -1,0 +1,29 @@
+{
+  "name": "tjcarroll11.github.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify index.ts -p [ tsify --noImplicitAny ] > bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tjcarroll11/tjcarroll11.github.io.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tjcarroll11/tjcarroll11.github.io/issues"
+  },
+  "homepage": "https://github.com/tjcarroll11/tjcarroll11.github.io#readme",
+  "dependencies": {
+    "firebase": "^7.14.2",
+    "pixi.js": "^5.2.4"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.1",
+    "tsify": "^4.0.1",
+    "typescript": "^3.8.3"
+  }
+}
